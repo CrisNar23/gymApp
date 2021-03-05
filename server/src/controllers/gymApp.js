@@ -46,21 +46,41 @@ const createUser = async (req, res) => {
 const authUser = async (req, res) => {
   const user = req.body;
   try {
-    const result = await dbConnection("users").where(user).select("*");
+    const result = await dbConnection("users")
+      .join("cities", "users.city_id", "=", "cities.city_id")
+      .join("roles", "users.role_id", "=", "roles.role_id")
+      .select(
+        "users.user_id",
+        "users.username",
+        "users.role_id",
+        "roles.role_name",
+        "users.headquarter_name",
+        "cities.city_name"
+      )
+      .where(user);
     if (result.length !== 0) {
       result[0].role_id === 1
         ? ((payload = {
             user_id: result[0].user_id,
             username: result[0].username,
             role_id: result[0].role_id,
-            headquarter_id: result[0].headquarter_id,
           }),
-          jwt.sign(payload, process.env.SECRET_KEY, (err, token) => {
-            res.json({ token });
-          }))
+          jwt.sign(
+            payload,
+            process.env.SECRET_KEY,
+            { expiresIn: "1h" },
+            (err, token) => {
+              res.json({
+                message: "OK",
+                user_id: result[0].user_id,
+                role_name: result[0].role_name,
+                token,
+              });
+            }
+          ))
         : res
             .status(403)
-            .json({ message: "You must be an administrator to login" });
+            .json({ message: "You must be an administrator to login1" });
     } else {
       res
         .status(404)
@@ -113,14 +133,45 @@ const createHeadquarter = async (req, res) => {
   }
 };
 
-/* Get users by city and headquarter */
+/* Get all users */
 const getUsers = async (req, res) => {
+  try {
+    const result = await dbConnection("users")
+      .join("cities", "users.city_id", "=", "cities.city_id")
+      .join("roles", "users.role_id", "=", "roles.role_id")
+      .select(
+        "user_id",
+        "username",
+        "role_name",
+        "headquarter_name",
+        "city_name"
+      )
+    result.length !== 0
+      ? res.status(200).json({ results: result })
+      : res.status(400).json({ message: "No records" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/* Get users by city and headquarter */
+const getUsersHC = async (req, res) => {
   const { city: city_id, headquarter: headquarter_name } = req.params;
   try {
     const result = await dbConnection("users")
-      .where("city_id", "=", city_id)
-      .andWhere("headquarter_name", "=", headquarter_name)
-      .select("*");
+      .join("cities", "users.city_id", "=", "cities.city_id")
+      .join("roles", "users.role_id", "=", "roles.role_id")
+      .select(
+        "user_id",
+        "username",
+        "role_name",
+        "headquarter_name",
+        "city_name"
+      )
+      .where("users.city_id", "=", city_id)
+      .andWhere("users.headquarter_name", "=", headquarter_name);
+
     result.length !== 0
       ? res.status(200).json({ results: result })
       : res.status(400).json({ message: "No records" });
@@ -136,4 +187,5 @@ module.exports = {
   createCity,
   createHeadquarter,
   getUsers,
+  getUsersHC
 };

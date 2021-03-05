@@ -7,6 +7,7 @@ const {
   createCity,
   createHeadquarter,
   getUsers,
+  getUsersHC
 } = require("../controllers/gymApp");
 
 /******************** ROUTES ********************/
@@ -23,7 +24,10 @@ router.post("/create-city", verifyToken, createCity);
 /* Route to add headquarters */
 router.post("/create-headquarter/:id", verifyToken, createHeadquarter);
 
-/* Route to add headquarters */
-router.get("/get-users/:city/:headquarter", verifyToken, getUsers);
+/* Route to get users by headquarter and city */
+router.get("/get-users", verifyToken, getUsers);
+
+/* Route to get users by headquarter and city */
+router.get("/get-users/:city/:headquarter", verifyToken, getUsersHC);
 
 module.exports = router;

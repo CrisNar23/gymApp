@@ -14,7 +14,7 @@ BACKEND
 3. Go to the project directory in the server folder and locate the variables.env file in the config folder and replace the database credentials with yours
 4. Start express server with the following command-> npm start
 
-BACKEND
+FRONTEND
 
 2. Go to the project directory in the client folder and run the command  -> npm install
 4. After that, start Angular with the following command -> npm start
